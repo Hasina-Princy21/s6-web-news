@@ -31,6 +31,91 @@ function db(): PDO
     return $pdo;
 }
 
+function start_session_if_needed(): void
+{
+    if (session_status() === PHP_SESSION_ACTIVE) {
+        return;
+    }
+
+    $isHttps = !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
+
+    session_name('geomonitor_backoffice');
+    session_set_cookie_params([
+        'lifetime' => 0,
+        'path' => '/',
+        'secure' => $isHttps,
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
+
+    session_start();
+}
+
+function check_logged_in(): void
+{
+    start_session_if_needed();
+
+    if (!isset($_SESSION['backoffice_user_id'])) {
+        header('Location: login.php');
+        exit;
+    }
+}
+
+function check_login(string $username, string $password): bool
+{
+    start_session_if_needed();
+
+    $sql =
+        'SELECT id, username, password_hash ' .
+        'FROM backoffice_users ' .
+        'WHERE username = :username AND is_active = TRUE ' .
+        'LIMIT 1';
+
+    $stmt = db()->prepare($sql);
+    $stmt->bindValue(':username', $username, PDO::PARAM_STR);
+    $stmt->execute();
+    $row = $stmt->fetch();
+
+    if (!is_array($row)) {
+        return false;
+    }
+
+    $storedHash = (string) $row['password_hash'];
+    if (!password_verify($password, $storedHash)) {
+        return false;
+    }
+
+    if (password_needs_rehash($storedHash, PASSWORD_DEFAULT)) {
+        $newHash = password_hash($password, PASSWORD_DEFAULT);
+        $rehashStmt = db()->prepare(
+            'UPDATE backoffice_users SET password_hash = :password_hash, updated_at = NOW() WHERE id = :id'
+        );
+        $rehashStmt->bindValue(':password_hash', $newHash, PDO::PARAM_STR);
+        $rehashStmt->bindValue(':id', (int) $row['id'], PDO::PARAM_INT);
+        $rehashStmt->execute();
+    }
+
+    session_regenerate_id(true);
+    $_SESSION['backoffice_user_id'] = (int) $row['id'];
+    $_SESSION['backoffice_username'] = (string) $row['username'];
+
+    return true;
+}
+
+function logout_user(): void
+{
+    start_session_if_needed();
+
+    $_SESSION = [];
+
+    if (ini_get('session.use_cookies')) {
+        $params = session_get_cookie_params();
+        setcookie(session_name(), '', time() - 42000, $params['path'], $params['domain'] ?? '', (bool) $params['secure'], (bool) $params['httponly']);
+    }
+
+    session_destroy();
+}
+
 function get_categories(): array
 {
     $sql = 'SELECT id, name FROM categories ORDER BY name ASC';

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/function.php';
 
+check_logged_in();
+
 function e(string $value): string
 {
     return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
@@ -122,7 +124,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body>
   <header class="topbar">
     <div class="logo">Geo<span>Monitor</span> Backoffice</div>
-    <div class="meta">TinyMCE + Leaflet OSM</div>
+    <div class="meta"><a href="logout.php" style="color:inherit;text-decoration:none;">Logout</a></div>
   </header>
 
   <main class="shell">
