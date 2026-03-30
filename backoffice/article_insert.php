@@ -1,0 +1,419 @@
+<?php
+
+declare(strict_types=1);
+
+require_once __DIR__ . '/function.php';
+
+function e(string $value): string
+{
+    return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+}
+
+$form = [
+    'header' => '',
+    'url_slug' => '',
+    'content' => '',
+    'latitude' => '',
+    'longitude' => '',
+    'categories' => [],
+];
+
+$errors = [];
+$categories = [];
+
+try {
+    $categories = get_categories();
+} catch (Throwable $exception) {
+    $errors[] = 'Database unavailable. Run migrations and ensure PostgreSQL is running.';
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $form['header'] = trim((string) ($_POST['header'] ?? ''));
+    $form['url_slug'] = trim((string) ($_POST['url_slug'] ?? ''));
+    $form['content'] = (string) ($_POST['content'] ?? '');
+    $form['latitude'] = trim((string) ($_POST['latitude'] ?? ''));
+    $form['longitude'] = trim((string) ($_POST['longitude'] ?? ''));
+
+    $rawCategories = $_POST['categories'] ?? [];
+    if (!is_array($rawCategories)) {
+        $rawCategories = [];
+    }
+    $form['categories'] = clean_category_ids($rawCategories);
+
+    if ($form['header'] === '') {
+        $errors[] = 'Header is required.';
+    }
+
+    $resolvedSlug = normalize_slug($form['url_slug'] !== '' ? $form['url_slug'] : $form['header']);
+    if ($resolvedSlug === '') {
+        $errors[] = 'Slug is invalid. Use letters, numbers and dashes.';
+    }
+
+    if (trim(strip_tags($form['content'])) === '') {
+        $errors[] = 'Content is required.';
+    }
+
+    $latRaw = $form['latitude'];
+    $lngRaw = $form['longitude'];
+    $latitude = parse_nullable_float($latRaw);
+    $longitude = parse_nullable_float($lngRaw);
+
+    if ($latRaw !== '' && $latitude === null) {
+        $errors[] = 'Latitude must be numeric.';
+    }
+
+    if ($lngRaw !== '' && $longitude === null) {
+        $errors[] = 'Longitude must be numeric.';
+    }
+
+    if (($latRaw === '' && $lngRaw !== '') || ($latRaw !== '' && $lngRaw === '')) {
+        $errors[] = 'Fill both latitude and longitude, or leave both empty.';
+    }
+
+    if ($latitude !== null && ($latitude < -90 || $latitude > 90)) {
+        $errors[] = 'Latitude must be between -90 and 90.';
+    }
+
+    if ($longitude !== null && ($longitude < -180 || $longitude > 180)) {
+        $errors[] = 'Longitude must be between -180 and 180.';
+    }
+
+    if ($errors === []) {
+        try {
+            $articleId = insert_article(
+                $form['header'],
+                $resolvedSlug,
+                $form['content'],
+                $latitude,
+                $longitude,
+                $form['categories']
+            );
+
+            header('Location: index.php?created=' . $articleId);
+            exit;
+        } catch (PDOException $exception) {
+            if ($exception->getCode() === '23505') {
+                $errors[] = 'Slug already exists. Please choose another one.';
+            } else {
+                $errors[] = 'Unable to save article. Check your data and retry.';
+            }
+        } catch (Throwable $exception) {
+            $errors[] = 'Unexpected error while saving article.';
+        }
+    }
+}
+?>
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>GeoMonitor - New Article</title>
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  >
+  <script src="https://cdn.tiny.cloud/1/rg0f6cakemvp9dufe4yunqc3attvyeug3ch84lpjn96rj4n2/tinymce/8/tinymce.min.js" referrerpolicy="origin" crossorigin="anonymous"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@300;400;500;700&family=Barlow:wght@300;400;500&display=swap');
+    :root{
+      --bg1:#0a0d12;
+      --bg2:#101520;
+      --bg3:#151c28;
+      --acc:#c8922a;
+      --txt:#ccd2e0;
+      --muted:#6a7490;
+      --border:rgba(200,146,42,0.2);
+      --danger:#e05a2a;
+      --safe:#2a9e6a;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{
+      min-height:100vh;
+      background:radial-gradient(circle at top right,#1a2234 0,#101520 35%,#0a0d12 75%);
+      color:var(--txt);
+      font-family:'Barlow',sans-serif;
+      display:flex;
+      flex-direction:column;
+    }
+    .topbar{
+      height:52px;
+      background:var(--bg2);
+      border-bottom:1px solid var(--border);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:0 18px;
+    }
+    .logo{
+      font-family:'Barlow Condensed',sans-serif;
+      font-size:20px;
+      letter-spacing:.12em;
+      color:var(--acc);
+      text-transform:uppercase;
+      font-weight:700;
+    }
+    .logo span{color:var(--txt);font-weight:300;}
+    .meta{
+      font-family:'Share Tech Mono',monospace;
+      color:var(--muted);
+      font-size:11px;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+    }
+    .shell{
+      max-width:1040px;
+      width:100%;
+      margin:32px auto;
+      padding:0 16px;
+    }
+    .card{
+      background:linear-gradient(165deg,var(--bg2),var(--bg3));
+      border:1px solid var(--border);
+      padding:20px;
+      margin-bottom:12px;
+    }
+    .head{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-end;
+      gap:10px;
+      margin-bottom:8px;
+    }
+    h1{
+      font-family:'Barlow Condensed',sans-serif;
+      font-size:34px;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      color:var(--acc);
+      margin-bottom:4px;
+    }
+    .muted{color:var(--muted);font-size:14px;line-height:1.5;}
+    .btn{
+      height:36px;
+      border:1px solid var(--acc);
+      background:var(--acc);
+      color:#1b1408;
+      font-weight:700;
+      letter-spacing:.05em;
+      text-transform:uppercase;
+      font-size:11px;
+      padding:0 14px;
+      cursor:pointer;
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+    }
+    .btn.alt{background:transparent;color:var(--muted);border-color:var(--border);}
+    form{display:grid;gap:14px;}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+    .field label,
+    .cats legend,
+    .mapbox .label{
+      display:block;
+      font-size:12px;
+      color:var(--muted);
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      margin-bottom:7px;
+      font-family:'Share Tech Mono',monospace;
+    }
+    .input{
+      width:100%;
+      min-height:40px;
+      border:1px solid var(--border);
+      background:#0d131d;
+      color:var(--txt);
+      padding:10px 12px;
+      font-size:14px;
+      outline:none;
+    }
+    .input:focus{border-color:rgba(200,146,42,0.55);}
+    .cats{border:1px solid var(--border);padding:10px 12px 12px;}
+    .cats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:7px;}
+    .chk{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--txt);}
+    .chk input{accent-color:var(--acc);}
+    .mapbox{border:1px solid var(--border);padding:10px;}
+    #map{height:320px;border:1px solid var(--border);}
+    .row3{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:end;margin-top:8px;}
+    .notice{
+      border:1px solid rgba(224,90,42,0.35);
+      background:rgba(224,90,42,0.08);
+      color:#f2b39c;
+      padding:10px 12px;
+      font-size:13px;
+      line-height:1.6;
+    }
+    .notice.ok{
+      border-color:rgba(42,158,106,0.45);
+      background:rgba(42,158,106,0.12);
+      color:#a9e3c6;
+    }
+    ul{padding-left:18px;}
+    .actions{display:flex;gap:8px;}
+    @media (max-width:760px){
+      .shell{margin:16px auto;}
+      .row,.row3{grid-template-columns:1fr;}
+      h1{font-size:26px;}
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="logo">Geo<span>Monitor</span> Backoffice</div>
+    <div class="meta">TinyMCE + Leaflet OSM</div>
+  </header>
+
+  <main class="shell">
+    <section class="card">
+      <div class="head">
+        <div>
+          <h1>New article</h1>
+          <p class="muted">Raw PHP form. Content editor via TinyMCE free, position picker via OpenStreetMap Leaflet.</p>
+        </div>
+        <a class="btn alt" href="index.php">Back to list</a>
+      </div>
+    </section>
+
+    <section class="card">
+      <?php if ($errors !== []): ?>
+        <div class="notice">
+          <strong>Validation errors:</strong>
+          <ul>
+            <?php foreach ($errors as $error): ?>
+              <li><?= e($error); ?></li>
+            <?php endforeach; ?>
+          </ul>
+        </div>
+      <?php endif; ?>
+
+      <form method="post" action="article_insert.php">
+        <div class="row">
+          <div class="field">
+            <label for="header">Header</label>
+            <input id="header" class="input" name="header" type="text" required value="<?= e($form['header']); ?>">
+          </div>
+          <div class="field">
+            <label for="url_slug">URL Slug (optional)</label>
+            <input id="url_slug" class="input" name="url_slug" type="text" value="<?= e($form['url_slug']); ?>" placeholder="auto from header if empty">
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="content">Content (formatted HTML)</label>
+          <textarea id="content" name="content" class="input" style="min-height:320px;"><?= e($form['content']); ?></textarea>
+        </div>
+
+        <fieldset class="cats">
+          <legend>Categories</legend>
+          <div class="cats-grid">
+            <?php foreach ($categories as $category): ?>
+              <?php $categoryId = (int) $category['id']; ?>
+              <label class="chk">
+                <input
+                  type="checkbox"
+                  name="categories[]"
+                  value="<?= $categoryId; ?>"
+                  <?= in_array($categoryId, $form['categories'], true) ? 'checked' : ''; ?>
+                >
+                <span><?= e((string) $category['name']); ?></span>
+              </label>
+            <?php endforeach; ?>
+          </div>
+        </fieldset>
+
+        <div class="mapbox">
+          <div class="label">Position (OpenStreetMap)</div>
+          <div id="map"></div>
+          <div class="row3">
+            <div class="field">
+              <label for="latitude">Latitude</label>
+              <input id="latitude" class="input" name="latitude" type="text" value="<?= e($form['latitude']); ?>" placeholder="e.g. 48.8566">
+            </div>
+            <div class="field">
+              <label for="longitude">Longitude</label>
+              <input id="longitude" class="input" name="longitude" type="text" value="<?= e($form['longitude']); ?>" placeholder="e.g. 2.3522">
+            </div>
+            <button class="btn alt" type="button" id="clear-position">Clear</button>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="btn" type="submit">Save article</button>
+          <a class="btn alt" href="index.php">Cancel</a>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script>
+    tinymce.init({
+      selector: '#content',
+      menubar: false,
+      branding: false,
+      height: 340,
+      plugins: 'lists link table code',
+      toolbar: 'undo redo | blocks | bold italic underline | bullist numlist | link table | code'
+    });
+
+    const map = L.map('map').setView([20, 0], 2);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    const latInput = document.getElementById('latitude');
+    const lngInput = document.getElementById('longitude');
+    const clearBtn = document.getElementById('clear-position');
+    let marker = null;
+
+    function setPosition(lat, lng, moveMap) {
+      if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+        return;
+      }
+
+      if (!marker) {
+        marker = L.marker([lat, lng]).addTo(map);
+      } else {
+        marker.setLatLng([lat, lng]);
+      }
+
+      latInput.value = lat.toFixed(6);
+      lngInput.value = lng.toFixed(6);
+
+      if (moveMap) {
+        map.setView([lat, lng], Math.max(map.getZoom(), 6));
+      }
+    }
+
+    map.on('click', function (event) {
+      setPosition(event.latlng.lat, event.latlng.lng, false);
+    });
+
+    function syncFromInputs() {
+      const lat = parseFloat(latInput.value.replace(',', '.'));
+      const lng = parseFloat(lngInput.value.replace(',', '.'));
+      if (Number.isFinite(lat) && Number.isFinite(lng)) {
+        setPosition(lat, lng, true);
+      }
+    }
+
+    latInput.addEventListener('change', syncFromInputs);
+    lngInput.addEventListener('change', syncFromInputs);
+
+    clearBtn.addEventListener('click', function () {
+      latInput.value = '';
+      lngInput.value = '';
+      if (marker) {
+        map.removeLayer(marker);
+        marker = null;
+      }
+    });
+
+    syncFromInputs();
+  </script>
+</body>
+</html>

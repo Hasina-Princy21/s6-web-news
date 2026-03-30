@@ -24,6 +24,7 @@ $selectedCategoryIds = array_values(array_unique(array_filter(
 $categories = [];
 $articles = [];
 $errorMessage = null;
+$createdId = isset($_GET['created']) ? (int) $_GET['created'] : 0;
 
 try {
   $categories = get_categories();
@@ -239,6 +240,11 @@ try {
       margin-bottom:12px;
       font-size:13px;
     }
+    .notice.ok{
+      border-color:rgba(42,158,106,0.45);
+      background:rgba(42,158,106,0.12);
+      color:#a9e3c6;
+    }
     .empty{
       border:1px dashed var(--border);
       padding:14px;
@@ -262,6 +268,9 @@ try {
     <section class="card">
       <h1>Articles</h1>
       <p>Liste backoffice avec filtres simples en SQL brut.</p>
+      <div class="actions" style="margin-top:12px;">
+        <a class="btn" href="article_insert.php">Inserer un article</a>
+      </div>
     </section>
 
     <section class="card">
@@ -302,6 +311,10 @@ try {
 
       <?php if ($errorMessage !== null): ?>
         <div class="notice"><?= e($errorMessage); ?></div>
+      <?php endif; ?>
+
+      <?php if ($createdId > 0): ?>
+        <div class="notice ok">Article #<?= $createdId; ?> cree avec succes.</div>
       <?php endif; ?>
 
       <div class="meta-line"><?= count($articles); ?> article(s) trouve(s).</div>
