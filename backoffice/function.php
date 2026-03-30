@@ -38,6 +38,45 @@ function get_categories(): array
     return db()->query($sql)->fetchAll();
 }
 
+function get_categories_with_article_count(): array
+{
+    $sql =
+        'SELECT c.id, c.name, COUNT(ac.article_id) AS article_count ' .
+        'FROM categories c ' .
+        'LEFT JOIN article_categories ac ON ac.category_id = c.id ' .
+        'GROUP BY c.id, c.name ' .
+        'ORDER BY c.name ASC';
+
+    return db()->query($sql)->fetchAll();
+}
+
+function create_category(string $name): int
+{
+    $sql = 'INSERT INTO categories (name) VALUES (:name) RETURNING id';
+    $stmt = db()->prepare($sql);
+    $stmt->bindValue(':name', $name, PDO::PARAM_STR);
+    $stmt->execute();
+
+    return (int) $stmt->fetchColumn();
+}
+
+function update_category(int $id, string $name): void
+{
+    $sql = 'UPDATE categories SET name = :name, updated_at = NOW() WHERE id = :id';
+    $stmt = db()->prepare($sql);
+    $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+    $stmt->bindValue(':name', $name, PDO::PARAM_STR);
+    $stmt->execute();
+}
+
+function delete_category(int $id): void
+{
+    $sql = 'DELETE FROM categories WHERE id = :id';
+    $stmt = db()->prepare($sql);
+    $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+    $stmt->execute();
+}
+
 function get_articles(string $search = '', array $categoryIds = []): array
 {
     $conditions = [];

@@ -270,6 +270,7 @@ try {
       <p>Liste backoffice avec filtres simples en SQL brut.</p>
       <div class="actions" style="margin-top:12px;">
         <a class="btn" href="article_insert.php">Inserer un article</a>
+        <a class="btn alt" href="categories.php">CRUD categories</a>
       </div>
     </section>
 

@@ -273,7 +273,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <h1>New article</h1>
           <p class="muted">Raw PHP form. Content editor via TinyMCE free, position picker via OpenStreetMap Leaflet.</p>
         </div>
-        <a class="btn alt" href="index.php">Back to list</a>
+        <div class="actions">
+          <a class="btn alt" href="categories.php">Manage categories</a>
+          <a class="btn alt" href="index.php">Back to list</a>
+        </div>
       </div>
     </section>
 
