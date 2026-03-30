@@ -1,0 +1,48 @@
+.shell{max-width:1040px;}
+
+.head{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-end;
+  gap:10px;
+  margin-bottom:8px;
+}
+
+form{display:grid;gap:14px;}
+
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+
+.field label,
+.cats legend,
+.mapbox .label{
+  display:block;
+  font-size:12px;
+  color:var(--muted);
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  margin-bottom:7px;
+  font-family:'Share Tech Mono',monospace;
+}
+
+.content-editor{min-height:320px;}
+
+.cats{border:1px solid var(--border);padding:10px 12px 12px;}
+
+.cats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:7px;}
+
+.chk{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--txt);}
+
+.chk input{accent-color:var(--acc);}
+
+.mapbox{border:1px solid var(--border);padding:10px;}
+
+#map{height:320px;border:1px solid var(--border);}
+
+.row3{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:end;margin-top:8px;}
+
+ul{padding-left:18px;}
+
+@media (max-width:760px){
+  .row,
+  .row3{grid-template-columns:1fr;}
+}

@@ -116,149 +116,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     crossorigin=""
   >
   <script src="https://cdn.tiny.cloud/1/rg0f6cakemvp9dufe4yunqc3attvyeug3ch84lpjn96rj4n2/tinymce/8/tinymce.min.js" referrerpolicy="origin" crossorigin="anonymous"></script>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@300;400;500;700&family=Barlow:wght@300;400;500&display=swap');
-    :root{
-      --bg1:#0a0d12;
-      --bg2:#101520;
-      --bg3:#151c28;
-      --acc:#c8922a;
-      --txt:#ccd2e0;
-      --muted:#6a7490;
-      --border:rgba(200,146,42,0.2);
-      --danger:#e05a2a;
-      --safe:#2a9e6a;
-    }
-    *{box-sizing:border-box;margin:0;padding:0;}
-    body{
-      min-height:100vh;
-      background:radial-gradient(circle at top right,#1a2234 0,#101520 35%,#0a0d12 75%);
-      color:var(--txt);
-      font-family:'Barlow',sans-serif;
-      display:flex;
-      flex-direction:column;
-    }
-    .topbar{
-      height:52px;
-      background:var(--bg2);
-      border-bottom:1px solid var(--border);
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      padding:0 18px;
-    }
-    .logo{
-      font-family:'Barlow Condensed',sans-serif;
-      font-size:20px;
-      letter-spacing:.12em;
-      color:var(--acc);
-      text-transform:uppercase;
-      font-weight:700;
-    }
-    .logo span{color:var(--txt);font-weight:300;}
-    .meta{
-      font-family:'Share Tech Mono',monospace;
-      color:var(--muted);
-      font-size:11px;
-      letter-spacing:.08em;
-      text-transform:uppercase;
-    }
-    .shell{
-      max-width:1040px;
-      width:100%;
-      margin:32px auto;
-      padding:0 16px;
-    }
-    .card{
-      background:linear-gradient(165deg,var(--bg2),var(--bg3));
-      border:1px solid var(--border);
-      padding:20px;
-      margin-bottom:12px;
-    }
-    .head{
-      display:flex;
-      justify-content:space-between;
-      align-items:flex-end;
-      gap:10px;
-      margin-bottom:8px;
-    }
-    h1{
-      font-family:'Barlow Condensed',sans-serif;
-      font-size:34px;
-      letter-spacing:.08em;
-      text-transform:uppercase;
-      color:var(--acc);
-      margin-bottom:4px;
-    }
-    .muted{color:var(--muted);font-size:14px;line-height:1.5;}
-    .btn{
-      height:36px;
-      border:1px solid var(--acc);
-      background:var(--acc);
-      color:#1b1408;
-      font-weight:700;
-      letter-spacing:.05em;
-      text-transform:uppercase;
-      font-size:11px;
-      padding:0 14px;
-      cursor:pointer;
-      text-decoration:none;
-      display:inline-flex;
-      align-items:center;
-    }
-    .btn.alt{background:transparent;color:var(--muted);border-color:var(--border);}
-    form{display:grid;gap:14px;}
-    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-    .field label,
-    .cats legend,
-    .mapbox .label{
-      display:block;
-      font-size:12px;
-      color:var(--muted);
-      text-transform:uppercase;
-      letter-spacing:.08em;
-      margin-bottom:7px;
-      font-family:'Share Tech Mono',monospace;
-    }
-    .input{
-      width:100%;
-      min-height:40px;
-      border:1px solid var(--border);
-      background:#0d131d;
-      color:var(--txt);
-      padding:10px 12px;
-      font-size:14px;
-      outline:none;
-    }
-    .input:focus{border-color:rgba(200,146,42,0.55);}
-    .cats{border:1px solid var(--border);padding:10px 12px 12px;}
-    .cats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:7px;}
-    .chk{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--txt);}
-    .chk input{accent-color:var(--acc);}
-    .mapbox{border:1px solid var(--border);padding:10px;}
-    #map{height:320px;border:1px solid var(--border);}
-    .row3{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:end;margin-top:8px;}
-    .notice{
-      border:1px solid rgba(224,90,42,0.35);
-      background:rgba(224,90,42,0.08);
-      color:#f2b39c;
-      padding:10px 12px;
-      font-size:13px;
-      line-height:1.6;
-    }
-    .notice.ok{
-      border-color:rgba(42,158,106,0.45);
-      background:rgba(42,158,106,0.12);
-      color:#a9e3c6;
-    }
-    ul{padding-left:18px;}
-    .actions{display:flex;gap:8px;}
-    @media (max-width:760px){
-      .shell{margin:16px auto;}
-      .row,.row3{grid-template-columns:1fr;}
-      h1{font-size:26px;}
-    }
-  </style>
+  <link rel="stylesheet" href="assets/css/base.css">
+  <link rel="stylesheet" href="assets/css/article_insert.css">
 </head>
 <body>
   <header class="topbar">
@@ -306,7 +165,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <div class="field">
           <label for="content">Content (formatted HTML)</label>
-          <textarea id="content" name="content" class="input" style="min-height:320px;"><?= e($form['content']); ?></textarea>
+          <textarea id="content" name="content" class="input content-editor"><?= e($form['content']); ?></textarea>
         </div>
 
         <fieldset class="cats">
@@ -352,71 +211,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   </main>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <script>
-    tinymce.init({
-      selector: '#content',
-      menubar: false,
-      branding: false,
-      height: 340,
-      plugins: 'lists link table code',
-      toolbar: 'undo redo | blocks | bold italic underline | bullist numlist | link table | code'
-    });
-
-    const map = L.map('map').setView([20, 0], 2);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
-
-    const latInput = document.getElementById('latitude');
-    const lngInput = document.getElementById('longitude');
-    const clearBtn = document.getElementById('clear-position');
-    let marker = null;
-
-    function setPosition(lat, lng, moveMap) {
-      if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
-        return;
-      }
-
-      if (!marker) {
-        marker = L.marker([lat, lng]).addTo(map);
-      } else {
-        marker.setLatLng([lat, lng]);
-      }
-
-      latInput.value = lat.toFixed(6);
-      lngInput.value = lng.toFixed(6);
-
-      if (moveMap) {
-        map.setView([lat, lng], Math.max(map.getZoom(), 6));
-      }
-    }
-
-    map.on('click', function (event) {
-      setPosition(event.latlng.lat, event.latlng.lng, false);
-    });
-
-    function syncFromInputs() {
-      const lat = parseFloat(latInput.value.replace(',', '.'));
-      const lng = parseFloat(lngInput.value.replace(',', '.'));
-      if (Number.isFinite(lat) && Number.isFinite(lng)) {
-        setPosition(lat, lng, true);
-      }
-    }
-
-    latInput.addEventListener('change', syncFromInputs);
-    lngInput.addEventListener('change', syncFromInputs);
-
-    clearBtn.addEventListener('click', function () {
-      latInput.value = '';
-      lngInput.value = '';
-      if (marker) {
-        map.removeLayer(marker);
-        marker = null;
-      }
-    });
-
-    syncFromInputs();
-  </script>
+  <script src="assets/js/article_insert.js"></script>
 </body>
 </html>

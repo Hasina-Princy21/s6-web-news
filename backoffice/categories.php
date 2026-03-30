@@ -94,159 +94,8 @@ try {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>GeoMonitor - Categories</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@300;400;500;700&family=Barlow:wght@300;400;500&display=swap');
-    :root{
-      --bg1:#0a0d12;
-      --bg2:#101520;
-      --bg3:#151c28;
-      --acc:#c8922a;
-      --txt:#ccd2e0;
-      --muted:#6a7490;
-      --border:rgba(200,146,42,0.2);
-      --danger:#e05a2a;
-      --safe:#2a9e6a;
-    }
-    *{box-sizing:border-box;margin:0;padding:0;}
-    body{
-      min-height:100vh;
-      background:radial-gradient(circle at top right,#1a2234 0,#101520 35%,#0a0d12 75%);
-      color:var(--txt);
-      font-family:'Barlow',sans-serif;
-      display:flex;
-      flex-direction:column;
-    }
-    .topbar{
-      height:52px;
-      background:var(--bg2);
-      border-bottom:1px solid var(--border);
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      padding:0 18px;
-    }
-    .logo{
-      font-family:'Barlow Condensed',sans-serif;
-      font-size:20px;
-      letter-spacing:.12em;
-      color:var(--acc);
-      text-transform:uppercase;
-      font-weight:700;
-    }
-    .logo span{color:var(--txt);font-weight:300;}
-    .meta{
-      font-family:'Share Tech Mono',monospace;
-      color:var(--muted);
-      font-size:11px;
-      letter-spacing:.08em;
-      text-transform:uppercase;
-    }
-    .shell{
-      max-width:980px;
-      width:100%;
-      margin:32px auto;
-      padding:0 16px;
-    }
-    .card{
-      background:linear-gradient(165deg,var(--bg2),var(--bg3));
-      border:1px solid var(--border);
-      padding:20px;
-      margin-bottom:12px;
-    }
-    .head{
-      display:flex;
-      align-items:flex-end;
-      justify-content:space-between;
-      gap:10px;
-      margin-bottom:8px;
-    }
-    h1{
-      font-family:'Barlow Condensed',sans-serif;
-      font-size:32px;
-      letter-spacing:.08em;
-      text-transform:uppercase;
-      color:var(--acc);
-      margin-bottom:4px;
-    }
-    h2{
-      font-family:'Barlow Condensed',sans-serif;
-      font-size:20px;
-      letter-spacing:.08em;
-      text-transform:uppercase;
-      color:var(--acc);
-      margin-bottom:12px;
-    }
-    .muted{font-size:14px;color:var(--muted);line-height:1.5;}
-    .btn{
-      height:36px;
-      border:1px solid var(--acc);
-      background:var(--acc);
-      color:#1b1408;
-      font-weight:700;
-      letter-spacing:.05em;
-      text-transform:uppercase;
-      font-size:11px;
-      padding:0 14px;
-      cursor:pointer;
-      text-decoration:none;
-      display:inline-flex;
-      align-items:center;
-    }
-    .btn.alt{background:transparent;color:var(--muted);border-color:var(--border);}
-    .btn.danger{background:transparent;color:var(--danger);border-color:rgba(224,90,42,0.4);}
-    .row{display:grid;grid-template-columns:1fr auto;gap:8px;}
-    .input{
-      width:100%;
-      min-height:38px;
-      border:1px solid var(--border);
-      background:#0d131d;
-      color:var(--txt);
-      padding:8px 10px;
-      font-size:14px;
-      outline:none;
-    }
-    .input:focus{border-color:rgba(200,146,42,0.55);}
-    .notice{
-      border:1px solid rgba(224,90,42,0.35);
-      background:rgba(224,90,42,0.08);
-      color:#f2b39c;
-      padding:10px 12px;
-      margin-bottom:10px;
-      font-size:13px;
-      line-height:1.5;
-    }
-    .notice.ok{
-      border-color:rgba(42,158,106,0.45);
-      background:rgba(42,158,106,0.12);
-      color:#a9e3c6;
-    }
-    .table{display:grid;gap:8px;}
-    .item{
-      border:1px solid var(--border);
-      background:#0f1622;
-      padding:10px;
-      display:grid;
-      grid-template-columns:1fr auto;
-      gap:8px;
-      align-items:center;
-    }
-    .item .meta-line{
-      font-family:'Share Tech Mono',monospace;
-      font-size:11px;
-      color:var(--muted);
-      margin-top:4px;
-    }
-    .actions{display:flex;gap:8px;}
-    .inline-form{display:flex;gap:8px;align-items:center;}
-    .inline-form .input{min-width:220px;}
-    @media (max-width:760px){
-      .shell{margin:16px auto;}
-      .item{grid-template-columns:1fr;}
-      .inline-form{flex-wrap:wrap;}
-      .inline-form .input{min-width:0;width:100%;}
-      .row{grid-template-columns:1fr;}
-    }
-  </style>
+  <link rel="stylesheet" href="assets/css/base.css">
+  <link rel="stylesheet" href="assets/css/categories.css">
 </head>
 <body>
   <header class="topbar">
@@ -307,14 +156,10 @@ try {
                 <div class="meta-line">Articles linked: <?= (int) $category['article_count']; ?></div>
               </form>
 
-              <form method="post">
+              <form method="post" class="js-delete-category-form">
                 <input type="hidden" name="action" value="delete">
                 <input type="hidden" name="id" value="<?= (int) $category['id']; ?>">
-                <button
-                  class="btn danger"
-                  type="submit"
-                  onclick="return confirm('Delete this category?')"
-                >
+                <button class="btn danger" type="submit">
                   Delete
                 </button>
               </form>
@@ -324,5 +169,6 @@ try {
       <?php endif; ?>
     </section>
   </main>
+  <script src="assets/js/categories.js"></script>
 </body>
 </html>
