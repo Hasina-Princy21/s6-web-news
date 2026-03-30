@@ -40,6 +40,20 @@ services:
     networks:
       - appnet
 
+  assets-minify:
+    image: node:22-alpine
+    container_name: guerre_assets_minify
+    working_dir: /workspace/scripts/minify
+    command:
+      - sh
+      - -c
+      - >-
+        if [ -f package-lock.json ]; then npm ci; else npm install; fi
+        && npm run minify:assets
+    volumes:
+      - ./:/workspace
+    restart: "no"
+
   frontoffice-php:
     build:
       context: ./php
@@ -73,7 +87,10 @@ services:
       - ./frontoffice:/var/www/html:ro
       - ./frontoffice/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
-      - frontoffice-php
+      frontoffice-php:
+        condition: service_started
+      assets-minify:
+        condition: service_completed_successfully
     networks:
       - appnet
 
@@ -110,7 +127,10 @@ services:
       - ./backoffice:/var/www/html:ro
       - ./backoffice/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
-      - backoffice-php
+      backoffice-php:
+        condition: service_started
+      assets-minify:
+        condition: service_completed_successfully
     networks:
       - appnet
 

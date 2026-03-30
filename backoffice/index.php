@@ -39,8 +39,8 @@ try {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>GeoMonitor - Backoffice</title>
-  <link rel="stylesheet" href="assets/css/base.css">
-  <link rel="stylesheet" href="assets/css/index.css">
+  <link rel="stylesheet" href="assets/css/base.min.css">
+  <link rel="stylesheet" href="assets/css/index.min.css">
 </head>
 <body>
   <header class="topbar">

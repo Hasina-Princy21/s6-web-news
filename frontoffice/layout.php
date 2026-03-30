@@ -27,7 +27,7 @@ function render_page_head(
   <meta property="og:description" content="<?= e($metaDescription); ?>">
   <meta property="og:type" content="website">
   <link rel="canonical" href="<?= e($canonical); ?>">
-  <link rel="stylesheet" href="/assets/css/app.css">
+  <link rel="stylesheet" href="/assets/css/app.min.css">
   <?php if ($includeLeaflet): ?>
     <link
       rel="stylesheet"

@@ -1,0 +1,12 @@
+{
+  "name": "guerre-news-tools",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Asset minification tooling for backoffice and frontoffice",
+  "scripts": {
+    "minify:assets": "node minify-assets.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.2"
+  }
+}

@@ -94,8 +94,8 @@ try {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>GeoMonitor - Categories</title>
-  <link rel="stylesheet" href="assets/css/base.css">
-  <link rel="stylesheet" href="assets/css/categories.css">
+  <link rel="stylesheet" href="assets/css/base.min.css">
+  <link rel="stylesheet" href="assets/css/categories.min.css">
 </head>
 <body>
   <header class="topbar">
@@ -169,6 +169,6 @@ try {
       <?php endif; ?>
     </section>
   </main>
-  <script src="assets/js/categories.js"></script>
+  <script src="assets/js/categories.min.js"></script>
 </body>
 </html>

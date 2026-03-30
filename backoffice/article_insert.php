@@ -116,8 +116,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     crossorigin=""
   >
   <script src="https://cdn.tiny.cloud/1/rg0f6cakemvp9dufe4yunqc3attvyeug3ch84lpjn96rj4n2/tinymce/8/tinymce.min.js" referrerpolicy="origin" crossorigin="anonymous"></script>
-  <link rel="stylesheet" href="assets/css/base.css">
-  <link rel="stylesheet" href="assets/css/article_insert.css">
+  <link rel="stylesheet" href="assets/css/base.min.css">
+  <link rel="stylesheet" href="assets/css/article_insert.min.css">
 </head>
 <body>
   <header class="topbar">
@@ -211,6 +211,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   </main>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <script src="assets/js/article_insert.js"></script>
+  <script src="assets/js/article_insert.min.js"></script>
 </body>
 </html>
