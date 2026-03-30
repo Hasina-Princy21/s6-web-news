@@ -27,12 +27,13 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    command:
-      - -url=jdbc:postgresql://db:5432/guerre_news
-      - -user=guerre_user
-      - -password=guerre_password
-      - -connectRetries=60
-      - migrate
+    command: [
+      "-url=jdbc:postgresql://db:5432/guerre_news",
+      "-user=guerre_user",
+      "-password=guerre_password",
+      "-connectRetries=60",
+      "migrate"
+    ]
     volumes:
       - ./migrations:/flyway/sql
     restart: "no"
@@ -40,7 +41,9 @@ services:
       - appnet
 
   frontoffice-php:
-    image: php:8.3-fpm-alpine
+    build:
+      context: ./php
+      dockerfile: Dockerfile
     container_name: guerre_frontoffice_php
     restart: unless-stopped
     working_dir: /var/www/html
@@ -75,7 +78,9 @@ services:
       - appnet
 
   backoffice-php:
-    image: php:8.3-fpm-alpine
+    build:
+      context: ./php
+      dockerfile: Dockerfile
     container_name: guerre_backoffice_php
     restart: unless-stopped
     working_dir: /var/www/html
@@ -114,3 +119,4 @@ volumes:
 
 networks:
   appnet:
+    driver: bridge
