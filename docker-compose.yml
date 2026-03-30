@@ -21,6 +21,24 @@ services:
     networks:
       - appnet
 
+  flyway:
+    image: flyway/flyway:10-alpine
+    container_name: guerre_flyway
+    depends_on:
+      db:
+        condition: service_healthy
+    command:
+      - -url=jdbc:postgresql://db:5432/guerre_news
+      - -user=guerre_user
+      - -password=guerre_password
+      - -connectRetries=60
+      - migrate
+    volumes:
+      - ./migrations:/flyway/sql
+    restart: "no"
+    networks:
+      - appnet
+
   frontoffice-php:
     image: php:8.3-fpm-alpine
     container_name: guerre_frontoffice_php
@@ -37,6 +55,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      flyway:
+        condition: service_completed_successfully
     networks:
       - appnet
 
@@ -70,6 +90,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      flyway:
+        condition: service_completed_successfully
     networks:
       - appnet
 
